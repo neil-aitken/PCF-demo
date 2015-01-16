@@ -1,0 +1,8 @@
+application: gaia-demo
+version: 1
+runtime: java
+api_version: 1
+
+handlers:
+- url: /*
+  login: admin
