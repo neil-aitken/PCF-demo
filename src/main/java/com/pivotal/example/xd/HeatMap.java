@@ -1,6 +1,5 @@
 package com.pivotal.example.xd;
 
-import java.awt.Color;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
@@ -10,6 +9,38 @@ import java.util.regex.Pattern;
 
 public class HeatMap implements Serializable {
 
+	//Google won't mix & match gui frameworks, so need a non-awt color
+	private static class Color
+	{
+		private int r, g, b;
+
+		public Color(int r, int g, int b) {
+			this.r=r;
+			this.g=g;
+			this.b=b;
+		}
+
+		public int getBlue() {
+			return b;
+		}
+
+		public int getGreen() {
+			return g;
+		}
+
+		public int getRed() {
+			return r;
+		}
+
+		public int getRGB() {
+			return ((255 & 0xFF) << 24) |
+	               ((r & 0xFF) << 16) |
+	               ((g & 0xFF) << 8)  |
+	               ((b & 0xFF) << 0);
+		}
+		
+	}
+	
 	public static String[] states = new String[] {
 			   "ca", "ny", "ma", "tx", "il", "wa", "fl", "pa", "va", "nj", "or", "oh", "mi", "co", "md", "nc", "ga", 
 			   "mn", "az", "in", "wi", "mo", "tn", "ct", "dc", "ut", "nm", "ks", "ky", "ok", "sc", "la", "nv", "ia", 
@@ -63,7 +94,7 @@ public class HeatMap implements Serializable {
 	
 	
 	private Color[] interpolate(int steps){
-		
+			
 		Color[] colors = new Color[steps];
         
         final Color WHITE = new Color(255,255,255);
