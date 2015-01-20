@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
@@ -40,7 +41,7 @@ public class OrderController {
 	static Logger logger = Logger.getLogger(OrderController.class);
 
 	OrderGenerator generator = new OrderGenerator();
-	Thread threadSender = new Thread (generator);
+	Thread threadSender;
 	
     public OrderController(){
     	
@@ -51,6 +52,9 @@ public class OrderController {
     	}
     	
     	if(client.getRabbitURI() != null){
+    		ThreadFactory threadFactory = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+    		threadSender = threadFactory.newThread(generator);
+    		
     		threadSender.start();
         	client.startMessageListener();
         	client.startOrderProcessing();

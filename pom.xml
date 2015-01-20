@@ -185,6 +185,11 @@
 			<artifactId>spring-jdbc</artifactId>
 			<version>3.2.3.RELEASE</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.appengine</groupId>
+			<artifactId>appengine-api-1.0-sdk</artifactId>
+			<version>1.9.17a</version>
+		</dependency>
 
 	</dependencies>
 	<build>
