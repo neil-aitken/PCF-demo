@@ -100,8 +100,8 @@
 	          <img src="resources/img/BestRetailInc_Logo.png" alt="Best Retail, Inc.">
 	        </div>
 	        <div class="nav">
-	        	<input type="button" value="Orders US Heat Map" class="activate nav-link" >
 	        	<input type="button" value="Start Data Stream" class="activate nav-link" onclick="startStream();">
+	        	<input type="button" value="Stop Data Stream" class="activate nav-link" onclick="stopStream();">
 	        </div>
 	    </div>
 	</div>
@@ -169,11 +169,6 @@ rainbow.setSpectrum('white', 'pivotal');
 */
 
 var updateHistogram = function() { 
-	for (var j = 0 ; j < 10 ; j++) {
-		$.get( "gen", function(data) {
-			
-		});   
-	}
 	
 	$.getJSON( "getHeatMap", function(data) {
 		var parade = data.heatMap;
@@ -212,7 +207,7 @@ $(document).bind("ajaxComplete", function(){
 setTimeout(updateHistogram, 1000);
 
 var generateData = function() { 
-	$.get( "gen?orders=5", function(data) {
+	$.get( "gen?orders=10", function(data) {
 		
 	});   
 	setTimeout(generateData, 600);

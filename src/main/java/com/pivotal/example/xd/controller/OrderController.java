@@ -117,16 +117,19 @@ public class OrderController {
     @RequestMapping(value="/gen")
     public @ResponseBody String  generateRandom(@RequestParam("orders") int orders)
     {
-    	for (int i=0; i<orders; i++)
+    	if (generatingData)
     	{
-			Random random = new Random();
-			String state = HeatMap.states[random.nextInt(HeatMap.states.length)];
-			int value = (1+random.nextInt(4))*10;
-			Order order = new Order();
-			order.setAmount(value);
-			order.setState(state);
-			
-			registerOrder(order);
+	    	for (int i=0; i<orders; i++)
+	    	{
+				Random random = new Random();
+				String state = HeatMap.states[random.nextInt(HeatMap.states.length)];
+				int value = (1+random.nextInt(4))*10;
+				Order order = new Order();
+				order.setAmount(value);
+				order.setState(state);
+				
+				registerOrder(order);
+	    	}
     	}
 		return "done";
     }
@@ -152,7 +155,6 @@ public class OrderController {
     	
     	generatingData = true;
     	
-    	generator.startGen();
     	return "Started";
 
     }    	
@@ -164,7 +166,6 @@ public class OrderController {
     	
     	if (!generatingData) return "Not Streaming";
     	generatingData = false;
-    	generator.stopGen();
     	
     	return "Stopped";
 
