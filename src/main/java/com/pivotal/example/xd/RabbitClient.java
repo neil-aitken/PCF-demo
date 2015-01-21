@@ -1,7 +1,6 @@
 package com.pivotal.example.xd;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.springframework.amqp.core.AcknowledgeMode;
@@ -17,11 +16,8 @@ import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.cloud.Cloud;
-import org.springframework.cloud.CloudException;
-import org.springframework.cloud.CloudFactory;
-import org.springframework.cloud.service.ServiceInfo;
-import org.springframework.cloud.service.common.RabbitServiceInfo;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.util.ErrorHandler;
 
 import com.pivotal.example.xd.controller.OrderController;
 import com.rabbitmq.client.ConnectionFactory;
@@ -42,23 +38,17 @@ public class RabbitClient {
 	private String rabbitURI;
 	
 	private RabbitClient(){
-		
-    	try{
-    		Cloud cloud = new CloudFactory().getCloud();
-	    	Iterator<ServiceInfo> services = cloud.getServiceInfos().iterator();
-	    	while (services.hasNext()){
-	    		ServiceInfo svc = services.next();
-	    		if (svc instanceof RabbitServiceInfo){
-	    			RabbitServiceInfo rabbitSvc = ((RabbitServiceInfo)svc);	    			
-	    			rabbitURI=rabbitSvc.getUri();
-	    			try{
+		try{
 	    				
 	    				ConnectionFactory factory = new ConnectionFactory();
+	    				factory.setThreadFactory(com.google.appengine.api.ThreadManager.currentRequestThreadFactory());
+	    				factory.setRequestedHeartbeat(5);
+	    				rabbitURI = "amqp://admin:cloud@146.148.60.247:5672";
 	    				factory.setUri(rabbitURI);
 	    				ccf = new CachingConnectionFactory(factory);
 	    				
 	    				connection = ccf.createConnection();
-	    
+	    				
 	    				FanoutExchange fanoutExchange = new FanoutExchange(EXCHANGE_NAME, false, true);
 	    				
 	    				RabbitAdmin rabbitAdmin = new RabbitAdmin(ccf);
@@ -82,18 +72,16 @@ public class RabbitClient {
 	    					    				
 	    			}
 	    			catch(Exception e){
+	    				logger.error(e);
 	    				throw new RuntimeException("Exception connecting to RabbitMQ",e);
 	    			}
-	    			
-	    		}
-	    	}
-    	}
-    	catch(CloudException ce){
-    		// means its not being deployed on Cloud
-    		logger.warn(ce.getMessage());
-    	}
 		
 		
+	}
+	
+	public static void main(String args[]) throws Exception{
+		RabbitClient client = RabbitClient.getInstance();
+		client.post(new Order());
 	}
 	
 	public static synchronized RabbitClient getInstance(){
@@ -106,29 +94,50 @@ public class RabbitClient {
 	public synchronized void post(Order order) throws IOException{
 		
 		rabbitTemplate.send(new Message(order.toBytes(), new MessageProperties()));
+		logger.info("Sent message " + order.toString());
 	}
 
 	public void startMessageListener(){
 		
 		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(ccf);		
+		container.setTaskExecutor(new SimpleAsyncTaskExecutor(com.google.appengine.api.ThreadManager.currentRequestThreadFactory()));
 		container.setQueues(orderQueue);
+		container.setErrorHandler(new ErrorHandler() {
+			
+			@Override
+			public void handleError(Throwable t) {
+				logger.error(t);
+				
+			}
+		});
 		container.setMessageListener(new MessageListener() {
 			
 			@Override
 			public void onMessage(Message message) {
+				logger.info("Processing message " + message.toString());
 				OrderController.registerOrder(Order.fromBytes(message.getBody()));
 			}
 		});
 		container.setAcknowledgeMode(AcknowledgeMode.AUTO);
 		container.start();
-		
+		logger.info("Is running: " +container.isRunning());
 		
 	}
 
 	public void startOrderProcessing(){
 		
 		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(ccf);		
+		container.setTaskExecutor(new SimpleAsyncTaskExecutor(com.google.appengine.api.ThreadManager.currentRequestThreadFactory()));
+		
 		container.setQueues(orderProcQueue);
+		container.setErrorHandler(new ErrorHandler() {
+			
+			@Override
+			public void handleError(Throwable t) {
+				logger.error(t);
+				
+			}
+		});
 		container.setMessageListener(new MessageListener() {
 			
 			@Override
@@ -140,7 +149,7 @@ public class RabbitClient {
 		});
 		container.setAcknowledgeMode(AcknowledgeMode.AUTO);
 		container.start();
-		
+		logger.info("Is running order processing: " +container.isRunning());
 		
 	}
 
