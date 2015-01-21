@@ -18,21 +18,9 @@ public class OrderGenerator implements Runnable {
 	
 	@Override
 	public void run() {
-
-		RabbitClient client = RabbitClient.getInstance();
 		while (!stopped){
 			if (generating){
-				Random random = new Random();
-				String state = HeatMap.states[random.nextInt(HeatMap.states.length)];
-				int value = (1+random.nextInt(4))*10;
-				Order order = new Order();
-				order.setAmount(value);
-				order.setState(state);
-				try {
-					client.post(order);
-				} catch (IOException e1) {
-					throw new RuntimeException(e1);
-				}
+				generate();
 			}
 			else{
 				try{
@@ -47,6 +35,21 @@ public class OrderGenerator implements Runnable {
 		
 	}
 	
+	public void generate() {
+		RabbitClient client = RabbitClient.getInstance();
+		Random random = new Random();
+		String state = HeatMap.states[random.nextInt(HeatMap.states.length)];
+		int value = (1+random.nextInt(4))*10;
+		Order order = new Order();
+		order.setAmount(value);
+		order.setState(state);
+		try {
+			client.post(order);
+		} catch (IOException e1) {
+			throw new RuntimeException(e1);
+		}
+	}
+
 	public void shutdown(){
 		stopped = true;
 		

@@ -169,6 +169,12 @@ rainbow.setSpectrum('white', 'pivotal');
 */
 
 var updateHistogram = function() { 
+	for (var j = 0 ; j < 10 ; j++) {
+		$.get( "gen", function(data) {
+			
+		});   
+	}
+	
 	$.getJSON( "getHeatMap", function(data) {
 		var parade = data.heatMap;
 		for (var i = 0 ; i<parade.length ; i++)
@@ -205,6 +211,14 @@ $(document).bind("ajaxComplete", function(){
 */
 setTimeout(updateHistogram, 1000);
 
+var generateData = function() { 
+	$.get( "gen?orders=5", function(data) {
+		
+	});   
+	setTimeout(generateData, 600);
+	
+};          
+setTimeout(generateData, 500);
 
 /*
 var parade = window.histograms.states;
