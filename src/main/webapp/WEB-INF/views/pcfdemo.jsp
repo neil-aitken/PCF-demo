@@ -102,7 +102,6 @@
 	        <div class="nav">
 	        	<input type="button" value="Orders US Heat Map" class="activate nav-link" >
 	        	<input type="button" value="Start Data Stream" class="activate nav-link" onclick="startStream();">
-	        	<input type="button" value="Kill App" class="activate nav-link" onclick="killApp();">
 	        </div>
 	    </div>
 	</div>
@@ -110,9 +109,6 @@
 	<div id="maincontent" style="overflow-y: scroll;">
 		<div align="center"> 
         <small>Instance hosted at &nbsp;<%=request.getLocalAddr() %>:<%=request.getLocalPort() %></small><br>
-        <c:if test="${vcap_app != null && !empty vcap_app}">
-        	<small>Instance Index &nbsp;<em>${vcap_app['instance_index']}</em></small><br>
-        </c:if>
 		<c:choose>
 			<c:when test="${rabbitURI != null}">
 				<small>Data being streamed from RabbitMQ</small>				
@@ -131,7 +127,7 @@
 	
     <div class="container">
         <div class="footer">
-          <div class="footer-text">©&nbsp;2014 Pivotal Software, Inc.  </div>
+          <div class="footer-text">ï¿½&nbsp;2014 Pivotal Software, Inc.  </div>
           <div class="footer-poweredby"><img src="resources/img/PoweredByPivotal.png" alt="Powered By Pivotal "></div>
 	    </div>
 	</div>  		

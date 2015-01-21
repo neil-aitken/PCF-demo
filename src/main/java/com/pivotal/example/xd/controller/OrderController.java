@@ -46,18 +46,20 @@ public class OrderController {
     public OrderController(){
     	
     	client = RabbitClient.getInstance();
-    	
-    	for (int i=0; i<HeatMap.states.length; i++){
-    		stateOrdersMap.put(HeatMap.states[i], new ArrayBlockingQueue<Order>(10));
-    	}
-    	
-    	if(client.getRabbitURI() != null){
-    		ThreadFactory threadFactory = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
-    		threadSender = threadFactory.newThread(generator);
-    		
-    		threadSender.start();
-        	client.startMessageListener();
-        	client.startOrderProcessing();
+    	try{
+	    	for (int i=0; i<HeatMap.states.length; i++){
+	    		stateOrdersMap.put(HeatMap.states[i], new ArrayBlockingQueue<Order>(10));
+	    	}
+	    	
+	    	//if(client.getRabbitURI() != null){
+	    		threadSender = com.google.appengine.api.ThreadManager.currentRequestThreadFactory().newThread(generator);
+	    		
+	    		threadSender.start();
+	        	client.startMessageListener();
+	        	client.startOrderProcessing();
+	    	//}
+    	} catch(Exception e){
+    		logger.error(e);
     	}
     	
     	
@@ -109,7 +111,19 @@ public class OrderController {
     	Order[] orders = q.toArray(new Order[]{});
     	return orders[orders.length-1].getAmount();
 
-    }    	
+    }  
+    
+    @RequestMapping(value="/test")
+    public @ResponseBody String test(){
+    	Order order = new Order();
+    	order.setState("ca");
+    	order.setAmount(200);
+    	try{
+    		client.post(order);
+    	} catch(Exception e){logger.error(e);}
+    	return "done";
+
+    } 
     
     @RequestMapping(value="/startStream")
     public @ResponseBody String startStream(){
