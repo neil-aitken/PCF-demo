@@ -59,6 +59,8 @@ public class OrderController {
 	        	client.startMessageListener();
 	        	client.startOrderProcessing();
 	    	//}
+	        	
+	        startStream();
     	} catch(Exception e){
     		logger.error(e);
     	}
